@@ -1,0 +1,314 @@
+/*******************************************************
+
+ * Program Name: <Vending State Machine>
+
+ * Author: <Abdarrahman Ayyaz>
+
+ * Date: <3/24/2022>
+
+ * Description: <A program that utilizes a truth table to generate combinations for a vending machine that interacts with customers.>
+
+ *******************************************************/
+
+
+#include <iostream>
+#include <limits>
+#include <iomanip>
+using namespace std;
+
+// Declaration of the Drink structure
+struct Drink
+{
+	string name;	// Drink name
+	double price;   // Price of the drink
+	int num;        // quantity available in machine
+};
+
+// Function prototypes
+
+void transaction(Drink[], int);
+int findCart(char[][2], int, char[][2]);
+void CreateTruthTable(int[][3], int);
+int Output(int, string [], int [][3]);
+
+int main()
+{
+	const int cartesian_SIZE = 4;
+	string A[cartesian_SIZE] = { 
+		"Coke ", "Pepsi", "Water", "7UP  " };
+	Drink machine[cartesian_SIZE] = {
+		{"", 1.50, 10},
+		{"", 1.75, 80},
+		{"", 1.00, 50},
+		{"", 1.25, 70} };
+    char B[cartesian_SIZE][cartesian_SIZE / 2] = { {'A', '5'}, {'B', '2'}, {'D', '9'}, {'F', '7'} };
+	for (int i = 0; i < cartesian_SIZE; i++)
+	{
+		machine[i].name = A[i];
+	}
+	int TruthTable[8][3];
+	CreateTruthTable(TruthTable, 8);
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 3; j++)
+		{
+			cout << TruthTable[i][j];
+		}
+		cout << endl;
+	}
+	char ch, choice;
+	int in;
+
+	do
+	{
+        cout<<setw(50)<<setfill('-')<<" "<<endl;
+        cout<<setfill(' ');
+        cout<<setw(30)<<"VENDING MACHINE"<<endl;
+        cout<<setw(50)<<setfill('-')<<" "<<endl;
+        cout<<setfill(' ')<<endl;
+        cout<<"Product"<<setw(10)<<"Price"<<setw(13)<<"Quantity"<<setw(16)<<"Combination"<<endl;
+        cout<<fixed;
+        cout<<showpoint;
+        cout<<setprecision(2);
+	    for (int i = 0; i < cartesian_SIZE; i++)
+	    {
+		    cout << machine[i].name << setw(8)<< "$"<<machine[i].price << setw(10) << machine[i].num;
+            cout << setw(13)<<B[i][0]<<B[i][1]<<endl;
+	    }
+		do
+		{
+			cout << "Enter Character input (A - Z): ";
+			cin >> ch;
+			if (ch >= 'A' && ch <= 'Z')
+			{
+				break;
+			}
+		} while (true);
+
+		do
+		{
+			while (true)
+			{
+				cout << "Enter Numeric digit (0 - 9): ";
+				cin >> in;
+				if (!cin)
+				{
+					cout << "Wrong Choice. Enter again " << endl;
+					cin.clear();
+					cin.ignore(numeric_limits<streamsize>::max(), '\n');
+					continue;
+				}
+				else break;
+			}
+			if (in >= 0 && in <= 9)
+			{
+				break;
+			}
+			else
+			{
+				cout << "Wrong Entry: ";
+			}
+		} while (true);
+
+		char cart[1][2] = { {ch, static_cast<char>(in + 48)} };
+		//cout << cart[0][0] << cart[0][1] << endl;
+		int pos = findCart(B, cartesian_SIZE, cart);
+		if (pos == -1)
+		{
+			cout << "Invalid Selection!" << endl;
+			cout << "Beverage name and cost are not available for this combination" << endl;
+		}
+		else
+		{
+			Output(pos, A, TruthTable);
+			transaction(machine, pos);
+		}
+		cout << "Do you want more! ";
+		cin >> choice;
+		if (toupper(choice) != 'Y')
+		{
+			break;
+		}
+	} while (true);
+	return 0;
+}
+/*******************************************************
+
+ * Function Name: <findCart>
+
+ * Purpose: < finding the cart according to combination >
+
+ * Parameter: <char destination[][2], int drowsize, char source[][2]>
+
+ * Return: <none>
+
+ *******************************************************/
+int findCart(char destination[][2], int drowsize, char source[][2])
+{
+	for (int row = 0; row < drowsize; row++)
+	{
+		if (destination[row][0] == source[0][0])
+		{
+			if (destination[row][1] == source[0][1])
+			{
+				return row;
+			}
+		}
+	}
+	return -1;
+}
+/*******************************************************
+
+ * Function Name: <CreateTruthTable>
+
+ * Purpose: < Creating the truth table >
+
+ * Parameter: <int arr[][3], int rowsize>
+
+ * Return: <none>
+
+ *******************************************************/
+void CreateTruthTable(int arr[][3], int rowsize)
+{
+	int n;
+	for (int k = 0; k < rowsize; k++) //3 digit binary so 2^3 = 8 is no: of combinations 
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			arr[k][j] = 0;
+		}
+	}
+
+	for (int i = 0; i < rowsize; i++)
+	{
+		n = i;
+		for (int j = 2; j >= 0; j--)
+		{
+			while (n != 0)
+			{
+				arr[i][j] = n % 2;
+				j--;
+				n = n / 2;
+			}
+		}
+	}
+}
+/*******************************************************
+
+ * Function Name: <Output>
+
+ * Purpose: <Printing the output for 5 columns >
+
+ * Parameter: <int pos, string A[], int TruthTable[][3]>
+
+ * Return: <ans>
+
+ *******************************************************/
+int Output(int pos, string A[], int TruthTable[][3])
+{
+	int val;
+	cout << "Beverage name: " << A[pos] << endl;
+	if (A[pos] == "Coke")
+	{
+		val = 1;
+	}
+	else if (A[pos] == "Pepsi")
+	{
+		val = 3;
+	}
+	else if (A[pos] == "Water")
+	{
+		val = 5;
+	}
+	else
+	{
+		val = 6;
+	}
+	cout << "Input Signals" << endl;
+	cout << "C1 | C2 | C3 |" << endl;
+	for (int col = 0; col < 3; col++)
+	{
+		cout << TruthTable[val][col] << "  | ";
+	}
+	cout << endl;
+
+	
+	int ans = 0;
+	for (int col = 0; col < 3; col++)
+	{
+		ans += TruthTable[val][col];
+		if (ans > 0)
+			ans = 1;
+		else
+			ans = 0;
+	}
+	cout << "Output Signal: " << ans << endl;
+	return ans;
+}
+
+/*******************************************************
+
+ * Function Name: <transaction>
+
+ * Purpose: <Processes the users choice and updates the remaining change>
+
+ * Parameter: <Drink m[], int choice>
+
+ * Return: <none>
+
+ *******************************************************/
+void transaction(Drink m[], int choice)
+{
+	// The amount of money tendered
+	double money;
+
+	// If the selected drink is sold out, display a
+	// message and get out of this function.
+	if (m[choice].num == 0)
+	{
+		cout << "Sorry, that selection is sold out.\n";
+		return;
+	}
+
+	// Get some money from the customer.
+	cout << "Enter an amount of money: "; 
+	cin >> money;
+
+	// Make sure the customer entered at least enough
+	// for the selected drink.
+	while (money < m[choice].price || money < 0)
+	{
+		cout << "Enter at least " << m[choice].price << ": ";
+		cin >> money;
+	}
+
+	// Process the selection and give back any
+	// change that is due.
+	if (money >= m[choice].price)
+	{
+		// Dispense the drink.
+		cout << "Enjoy your beverage!\n";
+		if (money - m[choice].price > 0)
+		{
+			// Calculate any change that is due.
+			cout << "Change calculated : " << (money - m[choice].price) << endl;
+			// If change is due, give it to the customer. if ((money - m[choice].price))
+			cout << "Your change, " << (money - m[choice].price) << " has just dropped into the Change Dispenser.\n\n";
+		}
+		else
+		{
+			cout << "No change has dropped into the Change Dispenser.\n";
+		}
+		
+		// Decrease the number of cans of the selected
+		// drink currently in the machine.
+		m[choice].num--;
+
+		// Display the number of cans of this drink
+		// currently in the machine.
+		cout << "There are " << m[choice].num
+			<< " drinks of that type left.\n";
+	}
+}
+
+//take two dimensional array and make truth table have the result output true depending on function (Take input from truth table) If output is one than it is true
